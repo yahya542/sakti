@@ -4,11 +4,14 @@ Academic Serializers - DRF Serializers for Academic models.
 
 from rest_framework import serializers
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from .models import (
     AcademicYear, Subject, Grade, Classroom,
     Enrollment, TeacherAssignment
 )
 from apps.accounts.serializers import UserSerializer
+
+User = get_user_model()
 
 
 class AcademicYearSerializer(serializers.ModelSerializer):
@@ -43,13 +46,22 @@ class ClassroomSerializer(serializers.ModelSerializer):
     
     student_count = serializers.IntegerField(read_only=True)
     homeroom_teacher_detail = UserSerializer(source='homeroom_teacher', read_only=True)
+    # Frontend field aliases
+    level = serializers.CharField(source='grade.level', read_only=True)
+    wali_kelas = serializers.CharField(source='homeroom_teacher.full_name', read_only=True)
+    wali_kelas_id = serializers.PrimaryKeyRelatedField(
+        source='homeroom_teacher',
+        queryset=User.objects.filter(role='teacher'),
+        required=False,
+        allow_null=True
+    )
     
     class Meta:
         model = Classroom
         fields = [
             'id', 'name', 'academic_year', 'grade', 'homeroom_teacher',
             'homeroom_teacher_detail', 'capacity', 'room_number',
-            'is_active', 'student_count'
+            'is_active', 'student_count', 'level', 'wali_kelas', 'wali_kelas_id'
         ]
         read_only_fields = ['id', 'student_count']
 
@@ -96,6 +108,15 @@ class ClassroomListSerializer(serializers.ModelSerializer):
         source='homeroom_teacher.full_name',
         read_only=True
     )
+    # Frontend field aliases
+    level = serializers.CharField(source='grade.level', read_only=True)
+    wali_kelas = serializers.CharField(source='homeroom_teacher.full_name', read_only=True)
+    wali_kelas_id = serializers.PrimaryKeyRelatedField(
+        source='homeroom_teacher',
+        queryset=User.objects.filter(role='teacher'),
+        required=False,
+        allow_null=True
+    )
     students = serializers.SerializerMethodField()
     
     class Meta:
@@ -103,7 +124,7 @@ class ClassroomListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'grade', 'grade_name', 'academic_year', 'academic_year_name',
             'homeroom_teacher', 'homeroom_teacher_name', 'capacity', 'room_number',
-            'is_active', 'student_count', 'students'
+            'is_active', 'student_count', 'students', 'level', 'wali_kelas', 'wali_kelas_id'
         ]
     
     def get_students(self, obj):

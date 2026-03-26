@@ -27,10 +27,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_spectacular',
     
     # Third party
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
     'django_filters',
     'corsheaders',
     'django_tenants',
@@ -113,6 +115,7 @@ SHARED_APPS = [
     
     # Third party global
     'rest_framework',
+    'drf_spectacular',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_celery_beat',
@@ -130,6 +133,7 @@ TENANT_APPS = [
     'apps.smart_linking',
     'apps.activities',
     'apps.finance',
+    'drf_spectacular',
 ]
 
 TENANT_MODEL = 'tenants.Tenant'
@@ -221,6 +225,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # JWT settings
@@ -236,6 +241,28 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SAKTI API',
+    'DESCRIPTION': 'School Academic & Knowledge Technology Integration - Multi-tenant API Documentation',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'User login, logout, and token management'},
+        {'name': 'Tenants', 'description': 'Multi-tenant management (superadmin only)'},
+        {'name': 'Accounts', 'description': 'User management and roles'},
+        {'name': 'Academic', 'description': 'Academic data (students, teachers, subjects, classes)'},
+        {'name': 'Activities', 'description': 'Student activities and events'},
+        {'name': 'Finance', 'description': 'Financial management (payments, invoices)'},
+        {'name': 'RBAC', 'description': 'Role-Based Access Control'},
+        {'name': 'Smart Linking', 'description': 'Smart linking and relationships between entities'},
+    ],
+    'ENUM_NAMES_OVERRIDES': {
+        # Add enum overrides if needed
+    },
 }
 
 # Logging
@@ -265,4 +292,8 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }

@@ -2,11 +2,13 @@
 Academic Views - API endpoints for Academic models.
 """
 
-from rest_framework import viewsets, status
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import serializers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 
 from .models import (
     AcademicYear, Subject, Grade, Classroom,
@@ -18,8 +20,38 @@ from .serializers import (
     ClassroomListSerializer, StudentEnrollmentSerializer
 )
 from apps.accounts.permissions import IsAdmin, IsTeacherOrAdmin
+from apps.accounts.serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer
+
+User = get_user_model()
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Academic'],
+        summary='List academic years',
+        description='Get a list of all academic years. Filter by tenant for non-super-admin users.'
+    ),
+    create=extend_schema(
+        tags=['Academic'],
+        summary='Create academic year',
+        description='Create a new academic year. Requires admin privileges.'
+    ),
+    retrieve=extend_schema(
+        tags=['Academic'],
+        summary='Get academic year details',
+        description='Get detailed information about a specific academic year.'
+    ),
+    update=extend_schema(
+        tags=['Academic'],
+        summary='Update academic year',
+        description='Update academic year information. Requires admin privileges.'
+    ),
+    destroy=extend_schema(
+        tags=['Academic'],
+        summary='Delete academic year',
+        description='Delete an academic year. Requires admin privileges.'
+    )
+)
 class AcademicYearViewSet(viewsets.ModelViewSet):
     """ViewSet for AcademicYear CRUD operations."""
     
@@ -63,6 +95,14 @@ class SubjectViewSet(viewsets.ModelViewSet):
     serializer_class = SubjectSerializer
     permission_classes = [IsAuthenticated]
     
+    @extend_schema(
+        tags=['Academic'],
+        summary='List subjects',
+        description='Get a list of all subjects. Supports filtering by type and search by name/code.'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
     def get_queryset(self):
         queryset = Subject.objects.all()
         
@@ -81,6 +121,13 @@ class SubjectViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Academic'], summary='List grades'),
+    create=extend_schema(tags=['Academic'], summary='Create grade'),
+    retrieve=extend_schema(tags=['Academic'], summary='Get grade details'),
+    update=extend_schema(tags=['Academic'], summary='Update grade'),
+    destroy=extend_schema(tags=['Academic'], summary='Delete grade')
+)
 class GradeViewSet(viewsets.ModelViewSet):
     """ViewSet for Grade CRUD operations."""
     
@@ -105,6 +152,14 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
     permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        tags=['Academic'],
+        summary='List classrooms',
+        description='Get a list of all classrooms. Filter by academic year, grade, or teacher.'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -181,6 +236,14 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
     permission_classes = [IsAuthenticated]
     
+    @extend_schema(
+        tags=['Academic'],
+        summary='List enrollments',
+        description='Get a list of all enrollments. Filter by classroom or status.'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
     def get_queryset(self):
         queryset = Enrollment.objects.all()
         
@@ -196,6 +259,11 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         
         return queryset
     
+    @extend_schema(
+        tags=['Academic'],
+        summary='Get teacher students',
+        description='Get students for the logged-in teacher (homeroom).'
+    )
     @action(detail=False, methods=['get'])
     def my_students(self, request):
         """Get students for the logged-in teacher."""
@@ -219,25 +287,27 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 class TeacherAssignmentViewSet(viewsets.ModelViewSet):
     """ViewSet for TeacherAssignment CRUD operations."""
     
-    queryset = TeacherAssignment.objects.all()
     serializer_class = TeacherAssignmentSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
+        # 1. Mulai dengan queryset dasar
         queryset = TeacherAssignment.objects.all()
         
-        # Filter by teacher
+        # 2. Ambil parameter dari URL (self.request hanya bisa diakses di dalam method)
         teacher = self.request.query_params.get('teacher')
+        classroom = self.request.query_params.get('classroom')
+
+        # 3. Logika Filter
         if teacher:
             queryset = queryset.filter(teacher_id=teacher)
         
-        # Filter by classroom
-        classroom = self.request.query_params.get('classroom')
         if classroom:
             queryset = queryset.filter(classroom_id=classroom)
-        
+            
+        # 4. Kembalikan hasilnya
         return queryset
-    
+        
     @action(detail=False, methods=['get'])
     def my_assignments(self, request):
         """Get assignments for the logged-in teacher."""
@@ -248,4 +318,205 @@ class TeacherAssignmentViewSet(viewsets.ModelViewSet):
         ).select_related('subject', 'classroom', 'academic_year')
         
         serializer = self.get_serializer(assignments, many=True)
+        return Response(serializer.data)
+
+
+class StudentListSerializer(serializers.Serializer):
+    """Serializer for student list in frontend."""
+    id = serializers.IntegerField()
+    nis = serializers.CharField(source='profile.student_id', read_only=True)
+    nisn = serializers.CharField(source='profile.student_id', read_only=True)
+    name = serializers.CharField(source='full_name', read_only=True)
+    email = serializers.EmailField()
+    class_name = serializers.SerializerMethodField()
+    no_kk = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField()
+    
+    def get_class_name(self, obj):
+        """Get active classroom name."""
+        enrollment = Enrollment.objects.filter(
+            student=obj, 
+            is_active=True, 
+            status='active'
+        ).select_related('classroom').first()
+        return enrollment.classroom.name if enrollment else None
+    
+    def get_no_kk(self, obj):
+        """Get parent account phone for Smart Linking."""
+        if obj.parent_account:
+            return obj.parent_account.phone
+        return None
+
+
+class StudentsViewSet(viewsets.ModelViewSet):
+    """ViewSet for Student operations."""
+    
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return StudentListSerializer
+        return UserSerializer
+    
+    def get_queryset(self):
+        queryset = User.objects.filter(role='student')
+        
+        # Search by name or email
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        # Filter by classroom
+        class_id = self.request.query_params.get('class_id')
+        if class_id:
+            student_ids = Enrollment.objects.filter(
+                classroom_id=class_id,
+                is_active=True,
+                status='active'
+            ).values_list('student_id', flat=True)
+            queryset = queryset.filter(id__in=student_ids)
+        
+        return queryset.select_related('profile', 'parent_account').prefetch_related(
+            'enrollments__classroom'
+        )
+    
+    def create(self, request, *args, **kwargs):
+        """Create new student with enrollment."""
+        data = request.data.copy()
+        
+        # Extract enrollment data
+        class_id = data.pop('class_id', None)
+        
+        # Create user
+        serializer = UserCreateSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        student = serializer.save()
+        
+        # Enroll in classroom if provided
+        if class_id:
+            try:
+                classroom = Classroom.objects.get(id=class_id)
+                Enrollment.objects.create(
+                    student=student,
+                    classroom=classroom,
+                    status='active',
+                    is_active=True
+                )
+            except Classroom.DoesNotExist:
+                pass
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        """Update student and optionally change enrollment."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy()
+        
+        # Extract enrollment data
+        class_id = data.pop('class_id', None)
+        
+        serializer = UserUpdateSerializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        # Update enrollment if provided
+        if class_id:
+            # Deactivate old enrollments
+            Enrollment.objects.filter(
+                student=instance,
+                is_active=True
+            ).update(is_active=False)
+            
+            # Create new enrollment
+            try:
+                classroom = Classroom.objects.get(id=class_id)
+                Enrollment.objects.create(
+                    student=instance,
+                    classroom=classroom,
+                    status='active',
+                    is_active=True
+                )
+            except Classroom.DoesNotExist:
+                pass
+        
+        return Response(serializer.data)
+
+
+class TeacherListSerializer(serializers.Serializer):
+    """Serializer for teacher list in frontend."""
+    id = serializers.IntegerField()
+    nip = serializers.CharField(source='profile.employee_id', read_only=True)
+    name = serializers.CharField(source='full_name', read_only=True)
+    email = serializers.EmailField()
+    phone = serializers.CharField()
+    subjects = serializers.SerializerMethodField()
+    class_as_wali = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField()
+    
+    def get_subjects(self, obj):
+        """Get subjects taught by this teacher."""
+        from .serializers import SubjectSerializer
+        assignments = TeacherAssignment.objects.filter(
+            teacher=obj, 
+            is_active=True
+        ).select_related('subject')
+        return SubjectSerializer([a.subject for a in assignments], many=True).data
+    
+    def get_class_as_wali(self, obj):
+        """Get classroom where teacher is homeroom teacher."""
+        classroom = Classroom.objects.filter(
+            homeroom_teacher=obj,
+            is_active=True
+        ).first()
+        return classroom.name if classroom else None
+
+
+class TeachersViewSet(viewsets.ModelViewSet):
+    """ViewSet for Teacher operations."""
+    
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TeacherListSerializer
+        return UserSerializer
+    
+    def get_queryset(self):
+        queryset = User.objects.filter(role='teacher')
+        
+        # Search by name or email
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        return queryset.select_related('profile').prefetch_related(
+            'subject_assignments__subject',
+            'homeroom_classrooms'
+        )
+    
+    def create(self, request, *args, **kwargs):
+        """Create new teacher."""
+        serializer = UserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        teacher = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        """Update teacher."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = UserUpdateSerializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)

@@ -2,6 +2,8 @@
 Account Views - Authentication and User management endpoints.
 """
 
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from drf_spectacular.openapi import AutoSchema
 from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -23,11 +25,47 @@ from .permissions import IsOwnerOrAdmin
 User = get_user_model()
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Accounts'],
+        summary='List all users',
+        description='Get a paginated list of all users. Super admin can see all users across tenants.'
+    ),
+    create=extend_schema(
+        tags=['Accounts'],
+        summary='Create new user',
+        description='Create a new user account. Requires admin privileges.'
+    ),
+    retrieve=extend_schema(
+        tags=['Accounts'],
+        summary='Get user details',
+        description='Get detailed information about a specific user.'
+    ),
+    update=extend_schema(
+        tags=['Accounts'],
+        summary='Update user',
+        description='Update user information. Users can update their own profile.'
+    ),
+    destroy=extend_schema(
+        tags=['Accounts'],
+        summary='Delete user',
+        description='Soft delete a user account. Requires admin privileges.'
+    )
+)
+
+
 class LoginView(APIView):
     """User login endpoint."""
     
     permission_classes = [AllowAny]
     
+    @extend_schema(
+        tags=['Authentication'],
+        summary='User login',
+        description='Authenticate user with email and password. Returns JWT access and refresh tokens.',
+        request=LoginSerializer,
+        responses={200: TokenSerializer}
+    )
     def post(self, request):
         """Authenticate user and return tokens."""
         serializer = LoginSerializer(data=request.data)
