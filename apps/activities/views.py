@@ -2,6 +2,7 @@
 Activities Views.
 """
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,6 +23,33 @@ from .serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Activities'],
+        summary='List attendances',
+        description='Get a list of all attendances. Filter by date, status, type, classroom, or subject.'
+    ),
+    create=extend_schema(
+        tags=['Activities'],
+        summary='Create attendance',
+        description='Record a new attendance entry.'
+    ),
+    retrieve=extend_schema(
+        tags=['Activities'],
+        summary='Get attendance details',
+        description='Get detailed information about a specific attendance.'
+    ),
+    update=extend_schema(
+        tags=['Activities'],
+        summary='Update attendance',
+        description='Update attendance information.'
+    ),
+    destroy=extend_schema(
+        tags=['Activities'],
+        summary='Delete attendance',
+        description='Delete an attendance record.'
+    )
+)
 class AttendanceViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing student attendance.
@@ -78,6 +106,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             recorded_by=self.request.user
         )
     
+    @extend_schema(
+        tags=['Activities'],
+        summary='Bulk create attendances',
+        description='Create multiple attendance records at once.'
+    )
     @action(detail=False, methods=['post'])
     def bulk_create(self, request):
         """
@@ -105,6 +138,33 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Activities'],
+        summary='List scores',
+        description='Get a list of all scores. Filter by student, subject, classroom, or type.'
+    ),
+    create=extend_schema(
+        tags=['Activities'],
+        summary='Create score',
+        description='Record a new score entry.'
+    ),
+    retrieve=extend_schema(
+        tags=['Activities'],
+        summary='Get score details',
+        description='Get detailed information about a specific score.'
+    ),
+    update=extend_schema(
+        tags=['Activities'],
+        summary='Update score',
+        description='Update score information.'
+    ),
+    destroy=extend_schema(
+        tags=['Activities'],
+        summary='Delete score',
+        description='Delete a score record.'
+    )
+)
 class ScoreViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing student scores.
@@ -171,6 +231,11 @@ class ScoreViewSet(viewsets.ModelViewSet):
             instance.changed_by = self.request.user
             instance.save(update_fields=['changed_at', 'changed_by'])
     
+    @extend_schema(
+        tags=['Activities'],
+        summary='Get score audit trail',
+        description='Get audit trail of score changes. Admin only.'
+    )
     @action(detail=False, methods=['get'])
     def audit_trail(self, request):
         """
@@ -190,6 +255,33 @@ class ScoreViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Activities'],
+        summary='List timeline events',
+        description='Get a list of all timeline events. Filter by type or date.'
+    ),
+    create=extend_schema(
+        tags=['Activities'],
+        summary='Create timeline event',
+        description='Create a new timeline event.'
+    ),
+    retrieve=extend_schema(
+        tags=['Activities'],
+        summary='Get timeline event details',
+        description='Get detailed information about a specific timeline event.'
+    ),
+    update=extend_schema(
+        tags=['Activities'],
+        summary='Update timeline event',
+        description='Update timeline event information.'
+    ),
+    destroy=extend_schema(
+        tags=['Activities'],
+        summary='Delete timeline event',
+        description='Delete a timeline event.'
+    )
+)
 class TimelineEventViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing timeline events.
@@ -260,6 +352,18 @@ class TimelineEventViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Activities'],
+        summary='List timeline notifications',
+        description='Get a list of all timeline notifications for the current parent.'
+    ),
+    retrieve=extend_schema(
+        tags=['Activities'],
+        summary='Get timeline notification details',
+        description='Get detailed information about a specific timeline notification.'
+    )
+)
 class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for viewing timeline notifications.
@@ -277,6 +381,11 @@ class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
             parent=user
         ).select_related('timeline_event')
     
+    @extend_schema(
+        tags=['Activities'],
+        summary='Mark notification as read',
+        description='Mark a specific notification as read.'
+    )
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
         """
@@ -298,6 +407,11 @@ class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
             TimelineNotificationSerializer(notification).data
         )
     
+    @extend_schema(
+        tags=['Activities'],
+        summary='Mark all notifications as read',
+        description='Mark all notifications as read for the current parent.'
+    )
     @action(detail=False, methods=['post'])
     def mark_all_read(self, request):
         """

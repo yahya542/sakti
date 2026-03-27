@@ -14,9 +14,9 @@ router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     # Authentication endpoints
-    path('auth/login/', LoginView.as_view(), name='login'),
-    path('auth/refresh/', RefreshTokenView.as_view(), name='token_refresh'),
-    path('auth/register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('refresh/', RefreshTokenView.as_view(), name='token_refresh'),
+    path('register/', RegisterView.as_view(), name='register'),
     
     # User endpoints
     path('users/list/', UserListView.as_view(), name='user_list'),

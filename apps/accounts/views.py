@@ -2,8 +2,7 @@
 Account Views - Authentication and User management endpoints.
 """
 
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
-from drf_spectacular.openapi import AutoSchema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,241 +19,130 @@ from .serializers import (
 from .authentication import (
     generate_access_token, generate_refresh_token, verify_refresh_token
 )
-from .permissions import IsOwnerOrAdmin
 
 User = get_user_model()
 
+# --- 1. AUTHENTICATION SECTION ---
+# Mengelompokkan semua yang berkaitan dengan akses (Login, Register, Token)
 
-@extend_schema_view(
-    list=extend_schema(
-        tags=['Accounts'],
-        summary='List all users',
-        description='Get a paginated list of all users. Super admin can see all users across tenants.'
-    ),
-    create=extend_schema(
-        tags=['Accounts'],
-        summary='Create new user',
-        description='Create a new user account. Requires admin privileges.'
-    ),
-    retrieve=extend_schema(
-        tags=['Accounts'],
-        summary='Get user details',
-        description='Get detailed information about a specific user.'
-    ),
-    update=extend_schema(
-        tags=['Accounts'],
-        summary='Update user',
-        description='Update user information. Users can update their own profile.'
-    ),
-    destroy=extend_schema(
-        tags=['Accounts'],
-        summary='Delete user',
-        description='Soft delete a user account. Requires admin privileges.'
-    )
-)
-
-
+@extend_schema(tags=['Authentication'])
 class LoginView(APIView):
     """User login endpoint."""
-    
     permission_classes = [AllowAny]
     
     @extend_schema(
-        tags=['Authentication'],
         summary='User login',
-        description='Authenticate user with email and password. Returns JWT access and refresh tokens.',
+        description='Authenticate user with email and password.',
         request=LoginSerializer,
         responses={200: TokenSerializer}
     )
     def post(self, request):
-        """Authenticate user and return tokens."""
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         user = authenticate(
-            email=serializer.validated_data['email'],
+            username=serializer.validated_data['username'],
             password=serializer.validated_data['password']
         )
         
-        if not user:
-            return Response(
-                {'error': 'Email atau password salah.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+        if not user or not user.is_active:
+            return Response({'error': 'Kredensial tidak valid.'}, status=status.HTTP_401_UNAUTHORIZED)
         
-        if not user.is_active:
-            return Response(
-                {'error': 'Akun dinonaktifkan.'},
-                status=status.HTTP_401_UNAUTHORIZED
-        )
-        
-        # Update login info
         user.last_login_at = timezone.now()
-        user.last_login_ip = self.get_client_ip(request)
-        user.save(update_fields=['last_login_at', 'last_login_ip'])
-        
-        # Generate tokens
-        access_token = generate_access_token(user)
-        refresh_token = generate_refresh_token(user)
+        user.save(update_fields=['last_login_at'])
         
         return Response({
-            'access': access_token,
-            'refresh': refresh_token,
+            'access': generate_access_token(user),
+            'refresh': generate_refresh_token(user),
             'user': UserSerializer(user).data
         })
-    
-    def get_client_ip(self, request):
-        """Get client IP address."""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
 
-
+@extend_schema(tags=['Authentication'])
 class RefreshTokenView(APIView):
     """Refresh access token endpoint."""
-    
     permission_classes = [AllowAny]
     
+    @extend_schema(summary='Refresh access token', responses={200: TokenSerializer})
     def post(self, request):
-        """Refresh access token using refresh token."""
         refresh_token = request.data.get('refresh')
-        
         if not refresh_token:
-            return Response(
-                {'error': 'Refresh token diperlukan.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Refresh token diperlukan.'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             user = verify_refresh_token(refresh_token)
+            return Response({
+                'access': generate_access_token(user),
+                'user': UserSerializer(user).data
+            })
         except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        access_token = generate_access_token(user)
-        
-        return Response({
-            'access': access_token,
-            'user': UserSerializer(user).data
-        })
+            return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    User ViewSet for CRUD operations.
-    Only accessible by authenticated users.
-    """
+@extend_schema(tags=['Authentication'])
+class RegisterView(generics.CreateAPIView):
+    """Public registration endpoint."""
+    serializer_class = UserCreateSerializer
+    permission_classes = [AllowAny]
     
+    @extend_schema(summary='User registration')
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+
+# --- 2. ACCOUNTS SECTION ---
+# Mengelompokkan manajemen profil dan data user
+
+@extend_schema_view(
+    list=extend_schema(tags=['Accounts'], summary='List all users'),
+    create=extend_schema(tags=['Accounts'], summary='Create new user'),
+    retrieve=extend_schema(tags=['Accounts'], summary='Get user details'),
+    update=extend_schema(tags=['Accounts'], summary='Update user'),
+    partial_update=extend_schema(tags=['Accounts'], summary='Partial update user'),
+    destroy=extend_schema(tags=['Accounts'], summary='Delete user'),
+    me=extend_schema(tags=['Accounts'], summary='Get current user info'),
+    change_password=extend_schema(tags=['Authentication'], summary='Change password') # Masuk Auth karena terkait keamanan
+)
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
-        """Return appropriate serializer based on action."""
-        if self.action == 'create':
-            return UserCreateSerializer
-        elif self.action in ['update', 'partial_update']:
-            return UserUpdateSerializer
+        if self.action == 'create': return UserCreateSerializer
+        if self.action in ['update', 'partial_update']: return UserUpdateSerializer
         return UserSerializer
     
     def get_queryset(self):
-        """Filter queryset based on user role."""
         user = self.request.user
-        
-        # Super admin sees all users
         if user.role == User.ROLE_SUPER_ADMIN:
             return User.objects.all()
-        
-        # Admin sees users in their tenant
         if user.role == User.ROLE_ADMIN:
-            return User.objects.filter(
-                Q(tenant=user.tenant) | Q(role=User.ROLE_SUPER_ADMIN)
-            ).exclude(role=User.ROLE_SUPER_ADMIN)
-        
-        # Others see only their own
+            return User.objects.filter(Q(tenant=user.tenant) | Q(role=User.ROLE_SUPER_ADMIN)).exclude(role=User.ROLE_SUPER_ADMIN)
         return User.objects.filter(id=user.id)
     
     @action(detail=False, methods=['get'])
     def me(self, request):
-        """Get current user info."""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
     def change_password(self, request):
-        """Change user password."""
-        serializer = PasswordChangeSerializer(
-            data=request.data,
-            context={'request': request}
-        )
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        
         user = request.user
         user.set_password(serializer.validated_data['new_password'])
         user.save()
-        
-        return Response({
-            'message': 'Password berhasil diubah.'
-        })
+        return Response({'message': 'Password berhasil diubah.'})
 
-
+@extend_schema(tags=['Accounts'], summary='List users with filters')
 class UserListView(generics.ListAPIView):
-    """
-    List users with filtering capabilities.
-    """
-    
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        """Filter users based on role and search query."""
         queryset = User.objects.all()
-        
-        # Filter by role
         role = self.request.query_params.get('role')
-        if role:
-            queryset = queryset.filter(role=role)
-        
-        # Search by name or email
         search = self.request.query_params.get('search')
+        if role: queryset = queryset.filter(role=role)
         if search:
-            queryset = queryset.filter(
-                Q(email__icontains=search) |
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search)
-            )
-        
+            queryset = queryset.filter(Q(email__icontains=search) | Q(first_name__icontains=search) | Q(last_name__icontains=search))
         return queryset
-
-
-class RegisterView(generics.CreateAPIView):
-    """
-    Public registration endpoint for new users.
-    Requires admin approval for student/parent accounts.
-    """
-    
-    serializer_class = UserCreateSerializer
-    permission_classes = [AllowAny]
-    
-    def create(self, request, *args, **kwargs):
-        """Create new user account."""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        user = serializer.save()
-        
-        # Generate tokens for auto-login
-        access_token = generate_access_token(user)
-        refresh_token = generate_refresh_token(user)
-        
-        return Response({
-            'access': access_token,
-            'refresh': refresh_token,
-            'user': UserSerializer(user).data,
-            'message': 'Akun berhasil dibuat. Silakan login.'
-        }, status=status.HTTP_201_CREATED)

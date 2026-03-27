@@ -1,5 +1,5 @@
 """
-Academic Views - API endpoints for Academic models.
+academic Views - API endpoints for academic models.
 """
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -27,27 +27,27 @@ User = get_user_model()
 
 @extend_schema_view(
     list=extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='List academic years',
         description='Get a list of all academic years. Filter by tenant for non-super-admin users.'
     ),
     create=extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='Create academic year',
         description='Create a new academic year. Requires admin privileges.'
     ),
     retrieve=extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='Get academic year details',
         description='Get detailed information about a specific academic year.'
     ),
     update=extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='Update academic year',
         description='Update academic year information. Requires admin privileges.'
     ),
     destroy=extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='Delete academic year',
         description='Delete an academic year. Requires admin privileges.'
     )
@@ -96,7 +96,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='List subjects',
         description='Get a list of all subjects. Supports filtering by type and search by name/code.'
     )
@@ -122,11 +122,11 @@ class SubjectViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(tags=['Academic'], summary='List grades'),
-    create=extend_schema(tags=['Academic'], summary='Create grade'),
-    retrieve=extend_schema(tags=['Academic'], summary='Get grade details'),
-    update=extend_schema(tags=['Academic'], summary='Update grade'),
-    destroy=extend_schema(tags=['Academic'], summary='Delete grade')
+    list=extend_schema(tags=['academic'], summary='List grades'),
+    create=extend_schema(tags=['academic'], summary='Create grade'),
+    retrieve=extend_schema(tags=['academic'], summary='Get grade details'),
+    update=extend_schema(tags=['academic'], summary='Update grade'),
+    destroy=extend_schema(tags=['academic'], summary='Delete grade')
 )
 class GradeViewSet(viewsets.ModelViewSet):
     """ViewSet for Grade CRUD operations."""
@@ -154,7 +154,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='List classrooms',
         description='Get a list of all classrooms. Filter by academic year, grade, or teacher.'
     )
@@ -237,7 +237,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='List enrollments',
         description='Get a list of all enrollments. Filter by classroom or status.'
     )
@@ -260,7 +260,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         return queryset
     
     @extend_schema(
-        tags=['Academic'],
+        tags=['academic'],
         summary='Get teacher students',
         description='Get students for the logged-in teacher (homeroom).'
     )

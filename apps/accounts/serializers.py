@@ -152,7 +152,7 @@ class PasswordResetSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login."""
     
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
 

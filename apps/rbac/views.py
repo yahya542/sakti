@@ -2,6 +2,7 @@
 RBAC Views - Permission management endpoints.
 """
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +12,33 @@ from .models import Permission, RolePermission, get_default_permissions
 from .serializers import PermissionSerializer, RolePermissionSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['RBAC'],
+        summary='List permissions',
+        description='Get a list of all permissions.'
+    ),
+    create=extend_schema(
+        tags=['RBAC'],
+        summary='Create permission',
+        description='Create a new permission.'
+    ),
+    retrieve=extend_schema(
+        tags=['RBAC'],
+        summary='Get permission details',
+        description='Get detailed information about a specific permission.'
+    ),
+    update=extend_schema(
+        tags=['RBAC'],
+        summary='Update permission',
+        description='Update permission information.'
+    ),
+    destroy=extend_schema(
+        tags=['RBAC'],
+        summary='Delete permission',
+        description='Delete a permission.'
+    )
+)
 class PermissionViewSet(viewsets.ModelViewSet):
     """ViewSet for Permission CRUD operations."""
     
@@ -18,6 +46,11 @@ class PermissionViewSet(viewsets.ModelViewSet):
     serializer_class = PermissionSerializer
     permission_classes = [IsAuthenticated]
     
+    @extend_schema(
+        tags=['RBAC'],
+        summary='Get role permissions',
+        description='Get permissions for a specific role.'
+    )
     @action(detail=False, methods=['get'])
     def role_permissions(self, request):
         """Get permissions for current user's role."""
@@ -36,6 +69,11 @@ class PermissionViewSet(viewsets.ModelViewSet):
         })
 
 
+@extend_schema(
+    tags=['RBAC'],
+    summary='Check permission',
+    description='Check if the current user has a specific permission.'
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def check_permission(request):
@@ -58,6 +96,11 @@ def check_permission(request):
     })
 
 
+@extend_schema(
+    tags=['RBAC'],
+    summary='Get my permissions',
+    description='Get all permissions for the current user.'
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_permissions(request):

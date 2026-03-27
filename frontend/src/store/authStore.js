@@ -14,7 +14,7 @@ export const useAuthStore = create(
       login: async (credentials) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await api.post('/api/accounts/login/', credentials)
+          const response = await api.post('/api/auth/login/', credentials)
           const { access, user } = response.data
           
           set({
@@ -37,7 +37,7 @@ export const useAuthStore = create(
       
       logout: async () => {
         try {
-          await api.post('/api/accounts/logout/')
+          await api.post('/api/auth/logout/')
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
@@ -59,7 +59,7 @@ export const useAuthStore = create(
         
         set({ isLoading: true })
         try {
-          const response = await api.get('/api/accounts/me/')
+          const response = await api.get('/api/auth/me/')
           set({
             user: response.data,
             isAuthenticated: true,

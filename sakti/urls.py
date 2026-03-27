@@ -19,17 +19,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # API v1
-    path('api/v1/', include('apps.accounts.urls')),
-    path('api/v1/', include('apps.tenants.urls')),
-    path('api/v1/', include('apps.academic.urls')),
-    path('api/v1/', include('apps.activities.urls')),
-    path('api/v1/', include('apps.finance.urls')),
-    path('api/v1/', include('apps.rbac.urls')),
-    path('api/v1/', include('apps.smart_linking.urls')),
+    path('auth/', include('apps.accounts.urls')),   # Jadi: /api/auth/login/
+    path('rbac/', include('apps.rbac.urls')),       # Jadi: /api/rbac/roles/
+    path('tenants/', include('apps.tenants.urls')), # Jadi: /api/tenants/list/
+    path('academic/', include('apps.academic.urls')),
+    path('activities/', include('apps.activities.urls')),
+    path('finance/', include('apps.finance.urls')),
+    path('smart-linking/', include('apps.smart_linking.urls')),
     
     # Swagger / API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path("", SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # Health check

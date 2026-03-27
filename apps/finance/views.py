@@ -2,6 +2,7 @@
 Finance Views.
 """
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -21,6 +22,34 @@ from .serializers import (
 )
 from .signals import generate_monthly_spp
 
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Finance'],
+        summary='List invoices',
+        description='Get a paginated list of all invoices. Filter by status, type, month, or year.'
+    ),
+    create=extend_schema(
+        tags=['Finance'],
+        summary='Create invoice',
+        description='Create a new invoice. Requires admin privileges.'
+    ),
+    retrieve=extend_schema(
+        tags=['Finance'],
+        summary='Get invoice details',
+        description='Get detailed information about a specific invoice.'
+    ),
+    update=extend_schema(
+        tags=['Finance'],
+        summary='Update invoice',
+        description='Update invoice information. Requires admin privileges.'
+    ),
+    destroy=extend_schema(
+        tags=['Finance'],
+        summary='Delete invoice',
+        description='Delete an invoice. Requires admin privileges.'
+    )
+)
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     """
@@ -66,6 +95,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         
         return queryset
     
+    @extend_schema(
+        tags=['Finance'],
+        summary='Generate SPP invoices',
+        description='Generate SPP invoices for all students in the current month/year.'
+    )
     @action(detail=False, methods=['post'])
     def generate_spp(self, request):
         """
@@ -103,6 +137,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
     
+    @extend_schema(
+        tags=['Finance'],
+        summary='Get invoice payments',
+        description='Get all payments for a specific invoice.'
+    )
     @action(detail=True, methods=['get'])
     def payments(self, request, pk=None):
         """Get all payments for an invoice."""
@@ -119,6 +158,33 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Finance'],
+        summary='List payments',
+        description='Get a paginated list of all payments. Filter by status, method, or gateway.'
+    ),
+    create=extend_schema(
+        tags=['Finance'],
+        summary='Create payment',
+        description='Record a new payment.'
+    ),
+    retrieve=extend_schema(
+        tags=['Finance'],
+        summary='Get payment details',
+        description='Get detailed information about a specific payment.'
+    ),
+    update=extend_schema(
+        tags=['Finance'],
+        summary='Update payment',
+        description='Update payment information.'
+    ),
+    destroy=extend_schema(
+        tags=['Finance'],
+        summary='Delete payment',
+        description='Delete a payment record.'
+    )
+)
 class PaymentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing payments.
@@ -157,6 +223,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return PaymentCreateSerializer
         return PaymentSerializer
     
+    @extend_schema(
+        tags=['Finance'],
+        summary='Initialize payment gateway',
+        description='Initialize payment via Midtrans or Xendit gateway.'
+    )
     @action(detail=False, methods=['post'])
     def init_gateway(self, request):
         """
@@ -262,6 +333,33 @@ def _initiate_xendit(payment, config):
     }
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Finance'],
+        summary='List payment gateway configs',
+        description='Get a list of payment gateway configurations.'
+    ),
+    create=extend_schema(
+        tags=['Finance'],
+        summary='Create payment gateway config',
+        description='Create a new payment gateway configuration.'
+    ),
+    retrieve=extend_schema(
+        tags=['Finance'],
+        summary='Get payment gateway config',
+        description='Get detailed information about a payment gateway configuration.'
+    ),
+    update=extend_schema(
+        tags=['Finance'],
+        summary='Update payment gateway config',
+        description='Update payment gateway configuration.'
+    ),
+    destroy=extend_schema(
+        tags=['Finance'],
+        summary='Delete payment gateway config',
+        description='Delete a payment gateway configuration.'
+    )
+)
 class PaymentGatewayConfigViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing payment gateway configuration.

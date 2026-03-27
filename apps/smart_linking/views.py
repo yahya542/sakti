@@ -2,6 +2,7 @@
 Smart Linking Views.
 """
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,6 +19,33 @@ from .serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Smart Linking'],
+        summary='List parent-student links',
+        description='Get a list of all parent-student links.'
+    ),
+    create=extend_schema(
+        tags=['Smart Linking'],
+        summary='Create parent-student link',
+        description='Create a new parent-student link.'
+    ),
+    retrieve=extend_schema(
+        tags=['Smart Linking'],
+        summary='Get link details',
+        description='Get detailed information about a specific link.'
+    ),
+    update=extend_schema(
+        tags=['Smart Linking'],
+        summary='Update link',
+        description='Update link information.'
+    ),
+    destroy=extend_schema(
+        tags=['Smart Linking'],
+        summary='Delete link',
+        description='Delete a parent-student link.'
+    )
+)
 class ParentStudentLinkViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing parent-student links.
@@ -47,6 +75,33 @@ class ParentStudentLinkViewSet(viewsets.ModelViewSet):
         serializer.save(parent=self.request.user)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Smart Linking'],
+        summary='List link requests',
+        description='Get a list of all link requests.'
+    ),
+    create=extend_schema(
+        tags=['Smart Linking'],
+        summary='Create link request',
+        description='Create a new link request.'
+    ),
+    retrieve=extend_schema(
+        tags=['Smart Linking'],
+        summary='Get link request details',
+        description='Get detailed information about a specific link request.'
+    ),
+    update=extend_schema(
+        tags=['Smart Linking'],
+        summary='Update link request',
+        description='Update link request information.'
+    ),
+    destroy=extend_schema(
+        tags=['Smart Linking'],
+        summary='Delete link request',
+        description='Delete a link request.'
+    )
+)
 class LinkRequestViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing link requests.
@@ -79,6 +134,11 @@ class LinkRequestViewSet(viewsets.ModelViewSet):
         """Set the parent to current user."""
         serializer.save(parent=self.request.user)
     
+    @extend_schema(
+        tags=['Smart Linking'],
+        summary='Approve link request',
+        description='Approve a link request. Admin only.'
+    )
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """
@@ -113,6 +173,11 @@ class LinkRequestViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
     
+    @extend_schema(
+        tags=['Smart Linking'],
+        summary='Reject link request',
+        description='Reject a link request. Admin only.'
+    )
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """
