@@ -21,6 +21,7 @@ import Invoices from './pages/finance/Invoices'
 import Payments from './pages/finance/Payments'
 import Settings from './pages/settings/Settings'
 import TenantSettings from './pages/settings/TenantSettings'
+import RBACSettings from './pages/settings/RBACSettings'
 import SmartLinking from './pages/smart_linking/SmartLinking'
 
 // Components
@@ -128,6 +129,11 @@ function App() {
           <Route path="/settings/tenant" element={
             <ProtectedRoute roles={['super_admin']}>
               <TenantSettings />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings/rbac" element={
+            <ProtectedRoute roles={['super_admin']}>
+              <RBACSettings />
             </ProtectedRoute>
           } />
         </Route>

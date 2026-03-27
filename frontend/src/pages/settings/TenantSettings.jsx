@@ -8,6 +8,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner'
 
 export default function TenantSettings() {
   const queryClient = useQueryClient()
+  const [activeTab, setActiveTab] = useState('branding')
   
   // Fetch current tenant settings
   const { data: tenant, isLoading } = useQuery({
@@ -17,18 +18,35 @@ export default function TenantSettings() {
 
   // Update tenant mutation
   const mutation = useMutation({
-    mutationFn: (data) => api.patch('/api/tenants/current/', data),
+    mutationFn: (formData) => api.patch('/api/tenants/current/', formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenant'] })
       alert('Pengaturan berhasil disimpan')
     },
+    onError: (error) => {
+      alert('Gagal menyimpan: ' + (error.response?.data?.message || error.message))
+    }
   })
 
   const handleSubmit = (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
-    mutation.mutate(Object.fromEntries(formData))
+    
+    // Remove empty values
+    for (const [key, value] of formData.entries()) {
+      if (!value) {
+        formData.delete(key)
+      }
+    }
+    
+    mutation.mutate(formData)
   }
+
+  const tabs = [
+    { id: 'branding', label: 'Branding' },
+    { id: 'info', label: 'Informasi' },
+    { id: 'theme', label: 'Warna Tema' },
+  ]
 
   if (isLoading) {
     return <LoadingSpinner />
@@ -38,51 +56,118 @@ export default function TenantSettings() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Pengaturan Tenant</h1>
-        <p className="text-gray-500">Kelola pengaturan tenant/sektor</p>
+        <p className="text-gray-500">Kelola tampilan dan konfigurasi tenant</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Basic Info */}
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Branding Tab */}
+      {activeTab === 'branding' && (
         <Card>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Dasar</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Branding & Logo</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Logo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo
+                </label>
+                {tenant?.logo && (
+                  <img 
+                    src={tenant.logo} 
+                    alt="Logo" 
+                    className="w-32 h-32 object-contain mb-2 border rounded"
+                  />
+                )}
+                <input
+                  type="file"
+                  name="logo"
+                  accept="image/*"
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                />
+              </div>
+              
+              {/* Favicon */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Favicon
+                </label>
+                {tenant?.favicon && (
+                  <img 
+                    src={tenant.favicon} 
+                    alt="Favicon" 
+                    className="w-16 h-16 object-contain mb-2 border rounded"
+                  />
+                )}
+                <input
+                  type="file"
+                  name="favicon"
+                  accept="image/*"
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                />
+              </div>
+            </div>
+            
             <Input
               name="name"
               label="Nama Tenant"
               defaultValue={tenant?.name}
               required
             />
+            
             <Input
-              name="slug"
-              label="Slug"
-              defaultValue={tenant?.slug}
-              disabled
+              name="sub_brand_name"
+              label="Nama Sub-brand"
+              defaultValue={tenant?.sub_brand_name}
+              placeholder="Nama alternatif yang ditampilkan di dashboard"
             />
-            <Input
-              name="code"
-              label="Kode Tenant"
-              defaultValue={tenant?.code}
-              disabled
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 rounded text-sm ${
-                  tenant?.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {tenant?.is_active ? 'Aktif' : 'Nonaktif'}
-                </span>
-              </div>
+            
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-1 rounded text-sm ${
+                tenant?.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {tenant?.is_active ? 'Aktif' : 'Nonaktif'}
+              </span>
             </div>
-            <Button type="submit">
-              Simpan
+            
+            <Button type="submit"
+             style={{ backgroundColor: tenant?.primary_color || '#5dea5d' }}
+            >
+              Simpan Perubahan
             </Button>
           </form>
         </Card>
+      )}
 
-        {/* Contact Info */}
+      {/* Info Tab */}
+      {activeTab === 'info' && (
         <Card>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Kontak</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -103,58 +188,119 @@ export default function TenantSettings() {
               defaultValue={tenant?.email}
             />
             <Input
-              name="website"
-              label="Website"
-              defaultValue={tenant?.website}
+              name="custom_domain"
+              label="Custom Domain"
+              placeholder="contoh: sakti.uim.ac.id"
+              defaultValue={tenant?.custom_domain}
             />
-            <Button type="submit">
-              Simpan
+            
+            <div className="pt-4 border-t">
+              <h4 className="text-md font-medium text-gray-900 mb-4">Informasi Langganan</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Plan</p>
+                  <p className="font-medium">{tenant?.plan || 'Free'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Kode Instansi</p>
+                  <p className="font-medium">{tenant?.kode_instansi || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Dibayar Sampai</p>
+                  <p className="font-medium">{tenant?.paid_until || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">SPP Default</p>
+                  <p className="font-medium">Rp {tenant?.spp_amount?.toLocaleString('id-ID') || '500.000'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <Button type="submit"  
+              style={{ backgroundColor: tenant?.primary_color || '#5dea5d' }}
+            >
+              Simpan Perubahan
             </Button>
           </form>
         </Card>
+      )}
 
-        {/* Subscription */}
+      {/* Theme Tab */}
+      {activeTab === 'theme' && (
         <Card>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Langganan</h3>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500">Plan</p>
-              <p className="font-medium">{tenant?.subscription?.plan || 'Free'}</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Warna Tema</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Warna Primer
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    name="primary_color"
+                    defaultValue={tenant?.primary_color || '#3B82F6'}
+                    className="w-12 h-10 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    name="primary_color"
+                    defaultValue={tenant?.primary_color || '#3B82F6'}
+                    className="flex-1 border rounded px-3 py-2"
+                    placeholder="#3B82F6"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Warna Sekunder
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    name="secondary_color"
+                    defaultValue={tenant?.secondary_color || '#8B5CF6'}
+                    className="w-12 h-10 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    name="secondary_color"
+                    defaultValue={tenant?.secondary_color || '#8B5CF6'}
+                    className="flex-1 border rounded px-3 py-2"
+                    placeholder="#8B5CF6"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Mulai Langganan</p>
-              <p className="font-medium">{tenant?.subscription?.start_date || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Berakhir</p>
-              <p className="font-medium">{tenant?.subscription?.end_date || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Pengguna</p>
-              <p className="font-medium">
-                {tenant?.subscription?.used_users} / {tenant?.subscription?.max_users || '∞'}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Features */}
-        <Card>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Fitur Aktif</h3>
-          <div className="space-y-2">
-            {tenant?.features?.map((feature) => (
-              <div key={feature.id} className="flex items-center justify-between py-2 border-b">
-                <span className="text-gray-700">{feature.name}</span>
-                <span className={`px-2 py-1 rounded text-xs ${
-                  feature.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {feature.enabled ? 'Aktif' : 'Nonaktif'}
+            
+            {/* Preview */}
+            <div className="p-4 border rounded-lg">
+              <p className="text-sm text-gray-500 mb-2">Preview:</p>
+              <div className="flex gap-4">
+                <span 
+                  className="px-4 py-2 rounded text-white text-sm font-medium"
+                  style={{ backgroundColor: tenant?.primary_color || '#3B82F6' }}
+                >
+                  Primer
+                </span>
+                <span 
+                  className="px-4 py-2 rounded text-white text-sm font-medium"
+                  style={{ backgroundColor: tenant?.secondary_color || '#8B5CF6' }}
+                >
+                  Sekunder
                 </span>
               </div>
-            ))}
-          </div>
+            </div>
+            
+            <Button type="submit"
+              style={{ backgroundColor: tenant?.primary_color || '#5dea5d' }}
+             >
+              Simpan Perubahan
+            </Button>
+          </form>
         </Card>
-      </div>
+      )}
     </div>
   )
 }

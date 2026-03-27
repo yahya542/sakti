@@ -51,7 +51,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = [
             'email', 'password', 'password_confirm',
             'first_name', 'last_name', 'role',
-            'phone', 'photo', 'profile'
+            'phone', 'profile'
         ]
     
     def validate(self, attrs):
@@ -64,16 +64,23 @@ class UserCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """Create user and profile."""
+        # Ambil data profile jika ada
         profile_data = validated_data.pop('profile', {})
         
+        # PENTING: Ambil email dan password agar tidak duplikat saat **validated_data dipanggil
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
+        
+        # Buat User menggunakan Manager
         user = User.objects.create_user(
-            email=validated_data['email'],
-            password=validated_data['password'],
-            **validated_data
+            email=email,
+            password=password,
+            **validated_data  # Sisanya: first_name, last_name, role, phone
         )
         
+        # Buat atau update Profile
         if profile_data:
-            UserProfile.objects.create(user=user, **profile_data)
+            UserProfile.objects.update_or_create(user=user, defaults=profile_data)
         
         return user
 
@@ -100,13 +107,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         # Update profile
         if profile_data:
-            profile = getattr(instance, 'profile', None)
-            if profile:
-                for attr, value in profile_data.items():
-                    setattr(profile, attr, value)
-                profile.save()
-            else:
-                UserProfile.objects.create(user=instance, **profile_data)
+            profile, created = UserProfile.objects.get_or_create(user=instance)
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
         
         return instance
 
@@ -144,7 +148,6 @@ class PasswordResetSerializer(serializers.Serializer):
         try:
             User.objects.get(email=value)
         except User.DoesNotExist:
-            # Don't reveal if email exists
             pass
         return value
 
@@ -152,7 +155,7 @@ class PasswordResetSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login."""
     
-    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
 

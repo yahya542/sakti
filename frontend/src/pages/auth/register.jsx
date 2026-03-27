@@ -6,10 +6,14 @@ import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 
-export default function Login() {
+
+
+export default function Register() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
+
   })
   const [errors, setErrors] = useState({})
   

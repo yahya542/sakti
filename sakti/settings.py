@@ -297,3 +297,7 @@ LOGGING = {
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+# Konfigurasi Masa Berlaku Token (dalam menit)
+JWT_ACCESS_TOKEN_LIFETIME = 60  # Token akses berlaku 1 jam
+JWT_REFRESH_TOKEN_LIFETIME = 1440 # Token refresh berlaku 1 hari (24 jam)

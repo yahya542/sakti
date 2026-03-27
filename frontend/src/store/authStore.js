@@ -14,7 +14,7 @@ export const useAuthStore = create(
       login: async (credentials) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await api.post('/api/auth/login/', credentials)
+          const response = await api.post('auth/login/', credentials)
           const { access, user } = response.data
           
           set({
@@ -34,6 +34,21 @@ export const useAuthStore = create(
           return { success: false, error: errorMessage }
         }
       },
+      register : async (data) => {
+        set({ isLoading: true, error: null })
+        try {
+          await api.post('auth/register/', data)
+          set({ isLoading: false })
+          return { success: true }
+        } catch (error) {
+          const errorMessage = error.response?.data || 'Registration failed'
+          set({
+            error: errorMessage,
+            isLoading: false,
+          })
+          return { success: false, error: errorMessage }
+        }
+      }, 
       
       logout: async () => {
         try {
