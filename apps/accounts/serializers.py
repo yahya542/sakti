@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'first_name', 'last_name', 'full_name',
             'role', 'role_display', 'photo', 'phone', 'is_active',
             'email_verified', 'last_login_at', 'parent_account',
-            'profile', 'date_joined', 
+            'no_kk', 'profile', 'date_joined', 
         ]
         read_only_fields = ['id', 'last_login_at', 'date_joined', 'created_at']
 
@@ -45,13 +45,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
     profile = UserProfileSerializer(required=False)
+    no_kk = serializers.CharField(required=False, allow_blank=True)
     
     class Meta:
         model = User
         fields = [
             'email', 'password', 'password_confirm',
             'first_name', 'last_name', 'role',
-            'phone', 'profile'
+            'phone', 'no_kk', 'profile'
         ]
     
     def validate(self, attrs):

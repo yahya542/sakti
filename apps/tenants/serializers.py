@@ -21,7 +21,7 @@ class TenantSerializer(serializers.ModelSerializer):
             'custom_domain', 'is_active', 'plan', 'paid_until', 'spp_amount',
             'full_brand', 'display_name', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'full_brand']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'full_brand', 'kode_instansi', 'slug']
 
 
 class TenantCreateSerializer(serializers.ModelSerializer):

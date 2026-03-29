@@ -18,22 +18,22 @@ export default function Teachers() {
   // Fetch teachers
   const { data: teachers, isLoading } = useQuery({
     queryKey: ['teachers', filters],
-    queryFn: () => api.get('/api/academic/teachers/', { params: filters }),
+    queryFn: () => api.get('/academic/teachers/', { params: filters }),
   })
 
   // Fetch subjects for multi-select
   const { data: subjects } = useQuery({
     queryKey: ['subjects'],
-    queryFn: () => api.get('/api/academic/subjects/'),
+    queryFn: () => api.get('/academic/subjects/'),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedTeacher) {
-        return api.patch(`/api/academic/teachers/${selectedTeacher.id}/`, data)
+        return api.patch(`/academic/teachers/${selectedTeacher.id}/`, data)
       }
-      return api.post('/api/academic/teachers/', data)
+      return api.post('/academic/teachers/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] })

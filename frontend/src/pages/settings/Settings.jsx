@@ -12,12 +12,12 @@ export default function Settings() {
   // Fetch current settings
   const { data: settings, isLoading } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => api.get('/api/accounts/settings/'),
+    queryFn: () => api.get('/auth/me/'),
   })
 
   // Update settings mutation
   const mutation = useMutation({
-    mutationFn: (data) => api.patch('/api/accounts/settings/', data),
+    mutationFn: (data) => api.patch('/auth/me/', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
       alert('Pengaturan berhasil disimpan')

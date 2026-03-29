@@ -18,16 +18,16 @@ export default function Invoices() {
   // Fetch invoices
   const { data: invoicesData, isLoading } = useQuery({
     queryKey: ['invoices', filters],
-    queryFn: () => api.get('/api/finance/invoices/', { params: filters }),
+    queryFn: () => api.get('/finance/invoices/', { params: filters }),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedInvoice) {
-        return api.patch(`/api/finance/invoices/${selectedInvoice.id}/`, data)
+        return api.patch(`/finance/invoices/${selectedInvoice.id}/`, data)
       }
-      return api.post('/api/finance/invoices/', data)
+      return api.post('/finance/invoices/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] })

@@ -42,19 +42,19 @@ export default function RBACSettings() {
   // Fetch permissions
   const { data: permissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['permissions'],
-    queryFn: () => api.get('/api/rbac/permissions/'),
+    queryFn: () => api.get('/rbac/permissions/'),
   })
 
   // Fetch role permissions
   const { data: roleData, isLoading: roleLoading } = useQuery({
     queryKey: ['rolePermissions', selectedRole],
-    queryFn: () => api.get(`/api/rbac/permissions/role_permissions/?role=${selectedRole}`),
+    queryFn: () => api.get(`/rbac/permissions/role_permissions/?role=${selectedRole}`),
     enabled: !!selectedRole
   })
 
   // Update role permissions mutation
   const updateMutation = useMutation({
-    mutationFn: (data) => api.post('/api/rbac/permissions/update_role/', data),
+    mutationFn: (data) => api.post('/rbac/permissions/update_role/', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rolePermissions'] })
       alert('Hak akses berhasil diperbarui')

@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate ,  Link} from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useTenantStore } from '../../store/tenantStore'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
-import LoadingSpinner from '../../components/ui/LoadingSpinner'
+import LoadingSpinner from '../../components/ui/LoadingSpinner' 
+
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ export default function Login() {
             className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl"
             style={{ backgroundColor: theme.primaryColor }}
           >
-            S
+            
           </div>
           <span className="text-2xl font-bold text-gray-900">{theme.appName}</span>
         </div>
@@ -99,7 +100,7 @@ export default function Login() {
 
       <div className="mt-6 text-center text-sm text-gray-500">
         <div className="mt-2 space-y-1">
-           <p>Belum punya akun ? <a href="/register" className="text-blue-500 hover:underline">Daftarkan diri anda di sini</a></p>
+           <p>Belum punya akun ? <Link to="/register" className="text-blue-500 hover:underline"> Daftarkan diri anda di sini</Link></p>
         </div>
       </div>
     </div>

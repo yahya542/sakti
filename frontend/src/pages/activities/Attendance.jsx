@@ -18,22 +18,22 @@ export default function Attendance() {
   // Fetch attendance records
   const { data: attendanceData, isLoading } = useQuery({
     queryKey: ['attendance', filters],
-    queryFn: () => api.get('/api/activities/attendance/', { params: filters }),
+    queryFn: () => api.get('/activities/attendances/', { params: filters }),
   })
 
   // Fetch classes for filter
   const { data: classes } = useQuery({
     queryKey: ['classes'],
-    queryFn: () => api.get('/api/academic/classes/'),
+    queryFn: () => api.get('/academic/classrooms/'),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedAttendance) {
-        return api.patch(`/api/activities/attendance/${selectedAttendance.id}/`, data)
+        return api.patch(`/activities/attendances/${selectedAttendance.id}/`, data)
       }
-      return api.post('/api/activities/attendance/', data)
+      return api.post('/activities/attendances/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] })

@@ -9,6 +9,7 @@ import AuthLayout from './components/layout/AuthLayout'
 
 // Pages
 import Login from './pages/auth/Login'
+import Register from './pages/auth/register' 
 import Dashboard from './pages/Dashboard'
 import Students from './pages/academic/Students'
 import Teachers from './pages/academic/Teachers'
@@ -23,6 +24,7 @@ import Settings from './pages/settings/Settings'
 import TenantSettings from './pages/settings/TenantSettings'
 import RBACSettings from './pages/settings/RBACSettings'
 import SmartLinking from './pages/smart_linking/SmartLinking'
+import Profile from './pages/Profile'
 
 // Components
 import LoadingSpinner from './components/ui/LoadingSpinner'
@@ -52,6 +54,7 @@ function App() {
         {/* Public Routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} /> 
         </Route>
         
         {/* Protected Routes */}
@@ -136,6 +139,9 @@ function App() {
               <RBACSettings />
             </ProtectedRoute>
           } />
+          
+          {/* Profile - All authenticated users can access */}
+          <Route path="/profile" element={<Profile />} />
         </Route>
         
         {/* Default Redirect */}

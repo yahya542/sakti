@@ -18,28 +18,28 @@ export default function Scores() {
   // Fetch scores
   const { data: scoresData, isLoading } = useQuery({
     queryKey: ['scores', filters],
-    queryFn: () => api.get('/api/activities/scores/', { params: filters }),
+    queryFn: () => api.get('/activities/scores/', { params: filters }),
   })
 
   // Fetch classes for filter
   const { data: classes } = useQuery({
     queryKey: ['classes'],
-    queryFn: () => api.get('/api/academic/classes/'),
+    queryFn: () => api.get('/academic/classrooms/'),
   })
 
   // Fetch subjects for filter
   const { data: subjects } = useQuery({
     queryKey: ['subjects'],
-    queryFn: () => api.get('/api/academic/subjects/'),
+    queryFn: () => api.get('/academic/subjects/'),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedScore) {
-        return api.patch(`/api/activities/scores/${selectedScore.id}/`, data)
+        return api.patch(`/activities/scores/${selectedScore.id}/`, data)
       }
-      return api.post('/api/activities/scores/', data)
+      return api.post('/activities/scores/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scores'] })

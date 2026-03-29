@@ -15,12 +15,12 @@ export default function SmartLinking() {
   // Fetch smart links
   const { data: linksData, isLoading } = useQuery({
     queryKey: ['smart-links', filters],
-    queryFn: () => api.get('/api/smart-linking/links/', { params: filters }),
+    queryFn: () => api.get('/smart-linking/links/', { params: filters }),
   })
 
   // Verify link mutation
   const verifyMutation = useMutation({
-    mutationFn: (id) => api.post(`/api/smart-linking/links/${id}/verify/`),
+    mutationFn: (id) => api.post(`/smart-linking/links/${id}/verify/`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['smart-links'] })
       setShowVerifyModal(false)

@@ -13,12 +13,12 @@ export default function TenantSettings() {
   // Fetch current tenant settings
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['tenant'],
-    queryFn: () => api.get('/api/tenants/current/'),
+    queryFn: () => api.get('/tenants/current/'),
   })
 
   // Update tenant mutation
   const mutation = useMutation({
-    mutationFn: (formData) => api.patch('/api/tenants/current/', formData),
+    mutationFn: (formData) => api.patch('/tenants/current/', formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenant'] })
       alert('Pengaturan berhasil disimpan')

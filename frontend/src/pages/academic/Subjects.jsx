@@ -18,16 +18,16 @@ export default function Subjects() {
   // Fetch subjects
   const { data: subjects, isLoading } = useQuery({
     queryKey: ['subjects', filters],
-    queryFn: () => api.get('/api/academic/subjects/', { params: filters }),
+    queryFn: () => api.get('/academic/subjects/', { params: filters }),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedSubject) {
-        return api.patch(`/api/academic/subjects/${selectedSubject.id}/`, data)
+        return api.patch(`/academic/subjects/${selectedSubject.id}/`, data)
       }
-      return api.post('/api/academic/subjects/', data)
+      return api.post('/academic/subjects/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] })

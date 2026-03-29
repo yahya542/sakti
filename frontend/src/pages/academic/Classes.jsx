@@ -17,22 +17,22 @@ export default function Classes() {
   // Fetch classes
   const { data: classes, isLoading } = useQuery({
     queryKey: ['classes'],
-    queryFn: () => api.get('/api/academic/classes/'),
+    queryFn: () => api.get('/academic/classrooms/'),
   })
 
   // Fetch teachers for walikelas selection
   const { data: teachers } = useQuery({
     queryKey: ['teachers'],
-    queryFn: () => api.get('/api/academic/teachers/'),
+    queryFn: () => api.get('/academic/teachers/'),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedClass) {
-        return api.patch(`/api/academic/classes/${selectedClass.id}/`, data)
+        return api.patch(`/academic/classrooms/${selectedClass.id}/`, data)
       }
-      return api.post('/api/academic/classes/', data)
+      return api.post('/academic/classrooms/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] })

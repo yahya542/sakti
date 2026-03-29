@@ -31,8 +31,8 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
     
     @extend_schema(
-        summary='User login',
-        description='Authenticate user with email and password.',
+        summary='Login pengguna',
+        description='Mengautentikasi pengguna menggunakan email dan kata sandi.',
         request=LoginSerializer,
         responses={200: TokenSerializer}
     )
@@ -62,7 +62,7 @@ class RefreshTokenView(APIView):
     """Refresh access token endpoint."""
     permission_classes = [AllowAny]
     
-    @extend_schema(summary='Refresh access token', responses={200: TokenSerializer})
+    @extend_schema(summary='Perbarui token akses', description='Memperbarui token akses menggunakan refresh token.', responses={200: TokenSerializer})
     def post(self, request):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
@@ -83,7 +83,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = [AllowAny]
     
-    @extend_schema(summary='User registration')
+    @extend_schema(summary='Daftar pengguna', description='Mendaftarkan pengguna baru ke sistem.')
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -92,14 +92,14 @@ class RegisterView(generics.CreateAPIView):
 # Mengelompokkan manajemen profil dan data user
 
 @extend_schema_view(
-    list=extend_schema(tags=['Accounts'], summary='List all users'),
-    create=extend_schema(tags=['Accounts'], summary='Create new user'),
-    retrieve=extend_schema(tags=['Accounts'], summary='Get user details'),
-    update=extend_schema(tags=['Accounts'], summary='Update user'),
-    partial_update=extend_schema(tags=['Accounts'], summary='Partial update user'),
-    destroy=extend_schema(tags=['Accounts'], summary='Delete user'),
-    me=extend_schema(tags=['Accounts'], summary='Get current user info'),
-    change_password=extend_schema(tags=['Authentication'], summary='Change password') # Masuk Auth karena terkait keamanan
+    list=extend_schema(tags=['Accounts'], summary='Daftar semua pengguna', description='Mengambil daftar semua pengguna dalam sistem.'),
+    create=extend_schema(tags=['Accounts'], summary='Buat pengguna baru', description='Membuat pengguna baru dengan data yang diberikan.'),
+    retrieve=extend_schema(tags=['Accounts'], summary='Detail pengguna', description='Mengambil detail Informasi pengguna tertentu.'),
+    update=extend_schema(tags=['Accounts'], summary='Perbarui pengguna', description='Memperbarui data pengguna secara lengkap.'),
+    partial_update=extend_schema(tags=['Accounts'], summary='Perbarui sebagian pengguna', description='Memperbarui sebagian data pengguna.'),
+    destroy=extend_schema(tags=['Accounts'], summary='Hapus pengguna', description='Menghapus pengguna dari sistem.'),
+    me=extend_schema(tags=['Accounts'], summary='Info pengguna saat ini', description='Mengambil informasi pengguna yang sedang login.'),
+    change_password=extend_schema(tags=['Authentication'], summary='Ubah kata sandi', description='Mengubah kata sandi pengguna yang sedang login.')
 )
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -133,7 +133,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({'message': 'Password berhasil diubah.'})
 
-@extend_schema(tags=['Accounts'], summary='List users with filters')
+@extend_schema(tags=['Accounts'], summary='Cari pengguna', description='Mencari pengguna berdasarkan filter peran dan kata kunci.')
 class UserListView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]

@@ -111,6 +111,14 @@ class User(AbstractUser):
         related_name='children'
     )
     
+    # No KK for linking student and parent
+    no_kk = models.CharField(
+        verbose_name=_('No. KK'),
+        max_length=20,
+        blank=True,
+        help_text=_('Nomor Kartu Keluarga untuk relasi siswa dengan orang tua')
+    )
+    
     objects = UserManager()
     
     USERNAME_FIELD = 'email'

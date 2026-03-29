@@ -15,28 +15,28 @@ from .serializers import PermissionSerializer, RolePermissionSerializer
 @extend_schema_view(
     list=extend_schema(
         tags=['RBAC'],
-        summary='List permissions',
-        description='Get a list of all permissions.'
+        summary='Daftar izin',
+        description='Mengambil daftar semua izin.'
     ),
     create=extend_schema(
         tags=['RBAC'],
-        summary='Create permission',
-        description='Create a new permission.'
+        summary='Buat izin',
+        description='Membuat izin baru.'
     ),
     retrieve=extend_schema(
         tags=['RBAC'],
-        summary='Get permission details',
-        description='Get detailed information about a specific permission.'
+        summary='Detail izin',
+        description='Mengambil informasi detail izin tertentu.'
     ),
     update=extend_schema(
         tags=['RBAC'],
-        summary='Update permission',
-        description='Update permission information.'
+        summary='Perbarui izin',
+        description='Memperbarui informasi izin.'
     ),
     destroy=extend_schema(
         tags=['RBAC'],
-        summary='Delete permission',
-        description='Delete a permission.'
+        summary='Hapus izin',
+        description='Menghapus izin.'
     )
 )
 class PermissionViewSet(viewsets.ModelViewSet):
@@ -48,8 +48,8 @@ class PermissionViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['RBAC'],
-        summary='Get role permissions',
-        description='Get permissions for a specific role.'
+        summary='Izin peran',
+        description='Mengambil izin untuk peran tertentu.'
     )
     @action(detail=False, methods=['get'])
     def role_permissions(self, request):
@@ -71,8 +71,8 @@ class PermissionViewSet(viewsets.ModelViewSet):
 
 @extend_schema(
     tags=['RBAC'],
-    summary='Check permission',
-    description='Check if the current user has a specific permission.'
+    summary='Cek izin',
+    description='Memeriksa apakah pengguna saat ini memiliki izin tertentu.'
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -98,8 +98,8 @@ def check_permission(request):
 
 @extend_schema(
     tags=['RBAC'],
-    summary='Get my permissions',
-    description='Get all permissions for the current user.'
+    summary='Izin saya',
+    description='Mengambil semua izin untuk pengguna saat ini.'
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

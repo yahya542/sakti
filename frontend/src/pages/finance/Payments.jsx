@@ -18,16 +18,16 @@ export default function Payments() {
   // Fetch payments
   const { data: paymentsData, isLoading } = useQuery({
     queryKey: ['payments', filters],
-    queryFn: () => api.get('/api/finance/payments/', { params: filters }),
+    queryFn: () => api.get('/finance/payments/', { params: filters }),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedPayment) {
-        return api.patch(`/api/finance/payments/${selectedPayment.id}/`, data)
+        return api.patch(`/finance/payments/${selectedPayment.id}/`, data)
       }
-      return api.post('/api/finance/payments/', data)
+      return api.post('/finance/payments/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] })

@@ -18,22 +18,22 @@ export default function Students() {
   // Fetch students
   const { data: students, isLoading } = useQuery({
     queryKey: ['students', filters],
-    queryFn: () => api.get('/api/academic/students/', { params: filters }),
+    queryFn: () => api.get('/academic/students/', { params: filters }),
   })
 
   // Fetch classes for filter
   const { data: classes } = useQuery({
     queryKey: ['classes'],
-    queryFn: () => api.get('/api/academic/classes/'),
+    queryFn: () => api.get('/academic/classrooms/'),
   })
 
   // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data) => {
       if (selectedStudent) {
-        return api.patch(`/api/academic/students/${selectedStudent.id}/`, data)
+        return api.patch(`/academic/students/${selectedStudent.id}/`, data)
       }
-      return api.post('/api/academic/students/', data)
+      return api.post('/academic/students/', data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] })

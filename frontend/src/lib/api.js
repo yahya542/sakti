@@ -1,62 +1,45 @@
 import axios from 'axios'
 
 const api = axios.create({
+  // Pastikan VITE_API_URL tidak diakhiri dengan /api
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage directly since Zustand persist might have synced
-    const authData = JSON.parse(localStorage.getItem('sakti-auth') || '{}')
-    const token = authData.state?.token
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    const authStorage = localStorage.getItem('sakti-auth')
+    if (authStorage) {
+      const authData = JSON.parse(authStorage)
+      const token = authData.state?.token
+      
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+        // Cek di console browser: "Request ke /tenants/current pakai token"
+        console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, "Auth: Yes");
+      }
     }
-    
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear auth data on 401
+    // Jangan langsung redirect jika error terjadi pada request tenant/auth awal
+    // agar tidak terjadi infinite loop redirect
+    const isAuthRequest = error.config.url.includes('tenants/current') || error.config.url.includes('login');
+
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('sakti-auth')
-      window.location.href = '/login'
+      // Gunakan ini hanya jika benar-benar ingin paksa logout
+      // window.location.href = '/login' 
     }
     return Promise.reject(error)
   }
 )
 
 export default api
-
-// API Helper functions
-export const apiGet = async (url, params = {}) => {
-  const response = await api.get(url, { params })
-  return response.data
-}
-
-export const apiPost = async (url, data = {}) => {
-  const response = await api.post(url, data)
-  return response.data
-}
-
-export const apiPatch = async (url, data = {}) => {
-  const response = await api.patch(url, data)
-  return response.data
-}
-
-export const apiDelete = async (url) => {
-  const response = await api.delete(url)
-  return response.data
-}

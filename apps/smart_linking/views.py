@@ -22,28 +22,28 @@ from .serializers import (
 @extend_schema_view(
     list=extend_schema(
         tags=['Smart Linking'],
-        summary='List parent-student links',
-        description='Get a list of all parent-student links.'
+        summary='Daftar tautan siswa-orang tua',
+        description='Mengambil daftar semua tautan siswa-orang tua.'
     ),
     create=extend_schema(
         tags=['Smart Linking'],
-        summary='Create parent-student link',
-        description='Create a new parent-student link.'
+        summary='Buat tautan',
+        description='Membuat tautan siswa-orang tua baru.'
     ),
     retrieve=extend_schema(
         tags=['Smart Linking'],
-        summary='Get link details',
-        description='Get detailed information about a specific link.'
+        summary='Detail tautan',
+        description='Mengambil informasi detail tautan tertentu.'
     ),
     update=extend_schema(
         tags=['Smart Linking'],
-        summary='Update link',
-        description='Update link information.'
+        summary='Perbarui tautan',
+        description='Memperbarui informasi tautan.'
     ),
     destroy=extend_schema(
         tags=['Smart Linking'],
-        summary='Delete link',
-        description='Delete a parent-student link.'
+        summary='Hapus tautan',
+        description='Menghapus tautan siswa-orang tua.'
     )
 )
 class ParentStudentLinkViewSet(viewsets.ModelViewSet):
@@ -78,28 +78,28 @@ class ParentStudentLinkViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['Smart Linking'],
-        summary='List link requests',
-        description='Get a list of all link requests.'
+        summary='Daftar permintaan tautan',
+        description='Mengambil daftar semua permintaan tautan.'
     ),
     create=extend_schema(
         tags=['Smart Linking'],
-        summary='Create link request',
-        description='Create a new link request.'
+        summary='Buat permintaan tautan',
+        description='Membuat permintaan tautan baru.'
     ),
     retrieve=extend_schema(
         tags=['Smart Linking'],
-        summary='Get link request details',
-        description='Get detailed information about a specific link request.'
+        summary='Detail permintaan tautan',
+        description='Mengambil informasi detail permintaan tautan tertentu.'
     ),
     update=extend_schema(
         tags=['Smart Linking'],
-        summary='Update link request',
-        description='Update link request information.'
+        summary='Perbarui permintaan tautan',
+        description='Memperbarui informasi permintaan tautan.'
     ),
     destroy=extend_schema(
         tags=['Smart Linking'],
-        summary='Delete link request',
-        description='Delete a link request.'
+        summary='Hapus permintaan tautan',
+        description='Menghapus permintaan tautan.'
     )
 )
 class LinkRequestViewSet(viewsets.ModelViewSet):
@@ -136,8 +136,8 @@ class LinkRequestViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Smart Linking'],
-        summary='Approve link request',
-        description='Approve a link request. Admin only.'
+        summary='Setuju permintaan tautan',
+        description='Menyetujuui permintaan tautan. Hanya untuk admin.'
     )
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -175,8 +175,8 @@ class LinkRequestViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Smart Linking'],
-        summary='Reject link request',
-        description='Reject a link request. Admin only.'
+        summary='Tolak permintaan tautan',
+        description='Menolak permintaan tautan. Hanya untuk admin.'
     )
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):

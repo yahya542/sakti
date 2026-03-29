@@ -27,29 +27,29 @@ User = get_user_model()
 
 @extend_schema_view(
     list=extend_schema(
-        tags=['academic'],
-        summary='List academic years',
-        description='Get a list of all academic years. Filter by tenant for non-super-admin users.'
+        tags=['Academic'],
+        summary='Daftar tahun ajaran',
+        description='Mengambil daftar semua tahun ajaran. Filter berdasarkan tenant untuk pengguna non-super-admin.'
     ),
     create=extend_schema(
-        tags=['academic'],
-        summary='Create academic year',
-        description='Create a new academic year. Requires admin privileges.'
+        tags=['Academic'],
+        summary='Buat tahun ajaran',
+        description='Membuat tahun ajaran baru. Memerlukan hak istimewa admin.'
     ),
     retrieve=extend_schema(
-        tags=['academic'],
-        summary='Get academic year details',
-        description='Get detailed information about a specific academic year.'
+        tags=['Academic'],
+        summary='Detail tahun ajaran',
+        description='Mengambil informasi detail tentang tahun ajaran tertentu.'
     ),
     update=extend_schema(
-        tags=['academic'],
-        summary='Update academic year',
-        description='Update academic year information. Requires admin privileges.'
+        tags=['Academic'],
+        summary='Perbarui tahun ajaran',
+        description='Memperbarui informasi tahun ajaran. Memerlukan hak istimewa admin.'
     ),
     destroy=extend_schema(
-        tags=['academic'],
-        summary='Delete academic year',
-        description='Delete an academic year. Requires admin privileges.'
+        tags=['Academic'],
+        summary='Hapus tahun ajaran',
+        description='Menghapus tahun ajaran. Memerlukan hak istimewa admin.'
     )
 )
 class AcademicYearViewSet(viewsets.ModelViewSet):
@@ -96,9 +96,9 @@ class SubjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['academic'],
-        summary='List subjects',
-        description='Get a list of all subjects. Supports filtering by type and search by name/code.'
+        tags=['Academic'],
+        summary='Daftar mata pelajaran',
+        description='Mengambil daftar semua mata pelajaran. Mendukung filter berdasarkan jenis dan pencarian berdasarkan nama/kode.'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -122,11 +122,11 @@ class SubjectViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(tags=['academic'], summary='List grades'),
-    create=extend_schema(tags=['academic'], summary='Create grade'),
-    retrieve=extend_schema(tags=['academic'], summary='Get grade details'),
-    update=extend_schema(tags=['academic'], summary='Update grade'),
-    destroy=extend_schema(tags=['academic'], summary='Delete grade')
+    list=extend_schema(tags=['Academic'], summary='Daftar tingkat kelas', description='Mengambil daftar semua tingkat kelas.'),
+    create=extend_schema(tags=['Academic'], summary='Buat tingkat kelas', description='Membuat tingkat kelas baru.'),
+    retrieve=extend_schema(tags=['Academic'], summary='Detail tingkat kelas', description='Mengambil detail informasi tingkat kelas tertentu.'),
+    update=extend_schema(tags=['Academic'], summary='Perbarui tingkat kelas', description='Memperbarui informasi tingkat kelas.'),
+    destroy=extend_schema(tags=['Academic'], summary='Hapus tingkat kelas', description='Menghapus tingkat kelas.')
 )
 class GradeViewSet(viewsets.ModelViewSet):
     """ViewSet for Grade CRUD operations."""
@@ -154,9 +154,9 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['academic'],
-        summary='List classrooms',
-        description='Get a list of all classrooms. Filter by academic year, grade, or teacher.'
+        tags=['Academic'],
+        summary='Daftar ruangan kelas',
+        description='Mengambil daftar semua ruangan kelas. Filter berdasarkan tahun ajaran, tingkat, atau guru.'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -237,9 +237,9 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
-        tags=['academic'],
-        summary='List enrollments',
-        description='Get a list of all enrollments. Filter by classroom or status.'
+        tags=['Academic'],
+        summary='Daftar enrollment',
+        description='Mengambil daftar semua enrollment. Filter berdasarkan classroom atau status.'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -260,9 +260,9 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         return queryset
     
     @extend_schema(
-        tags=['academic'],
-        summary='Get teacher students',
-        description='Get students for the logged-in teacher (homeroom).'
+        tags=['Academic'],
+        summary='Daftar siswa saya',
+        description='Mengambil daftar siswa untuk guru yang sedang login (wali kelas).'
     )
     @action(detail=False, methods=['get'])
     def my_students(self, request):
@@ -285,11 +285,16 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
 
 class TeacherAssignmentViewSet(viewsets.ModelViewSet):
-    """ViewSet for TeacherAssignment CRUD operations."""
+    """ViewSet untuk operasi CRUD penugasan guru."""
     
     serializer_class = TeacherAssignmentSerializer
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=['Academic'],
+        summary='Daftar penugasan guru',
+        description='Mengambil daftar penugasan guru berdasarkan filter.'
+    )
     def get_queryset(self):
         # 1. Mulai dengan queryset dasar
         queryset = TeacherAssignment.objects.all()
@@ -308,9 +313,14 @@ class TeacherAssignmentViewSet(viewsets.ModelViewSet):
         # 4. Kembalikan hasilnya
         return queryset
         
+    @extend_schema(
+        tags=['Academic'],
+        summary='Penugasan saya',
+        description='Mengambil daftar penugasan guru untuk guru yang sedang login.'
+    )
     @action(detail=False, methods=['get'])
     def my_assignments(self, request):
-        """Get assignments for the logged-in teacher."""
+        """Mengambil penugasan untuk guru yang sedang login."""
         user = request.user
         assignments = TeacherAssignment.objects.filter(
             teacher=user,
@@ -348,9 +358,17 @@ class StudentListSerializer(serializers.Serializer):
         return None
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Academic'], summary='Daftar siswa', description='Mengambil daftar semua siswa. Filter berdasarkan classroom atau cari berdasarkan nama/email.'),
+    create=extend_schema(tags=['Academic'], summary='Buat siswa', description='Membuat siswa baru dengan enrollment opsional.'),
+    retrieve=extend_schema(tags=['Academic'], summary='Detail siswa', description='Mengambil detail informasi siswa tertentu.'),
+    update=extend_schema(tags=['Academic'], summary='Perbarui siswa', description='Memperbarui data siswa dan enrollment opsional.'),
+    partial_update=extend_schema(tags=['Academic'], summary='Perbarui sebagian siswa', description='Memperbarui sebagian data siswa.'),
+    destroy=extend_schema(tags=['Academic'], summary='Hapus siswa', description='Menghapus siswa dari sistem.')
+)
 class StudentsViewSet(viewsets.ModelViewSet):
-    """ViewSet for Student operations."""
-    
+    """ViewSet untuk operasi siswa."""
+
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
@@ -477,8 +495,16 @@ class TeacherListSerializer(serializers.Serializer):
         return classroom.name if classroom else None
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Academic'], summary='Daftar guru', description='Mengambil daftar semua guru. Cari berdasarkan nama/email.'),
+    create=extend_schema(tags=['Academic'], summary='Buat guru', description='Membuat guru baru.'),
+    retrieve=extend_schema(tags=['Academic'], summary='Detail guru', description='Mengambil detail informasi guru tertentu.'),
+    update=extend_schema(tags=['Academic'], summary='Perbarui guru', description='Memperbarui data guru.'),
+    partial_update=extend_schema(tags=['Academic'], summary='Perbarui sebagian guru', description='Memperbarui sebagian data guru.'),
+    destroy=extend_schema(tags=['Academic'], summary='Hapus guru', description='Menghapus guru dari sistem.')
+)
 class TeachersViewSet(viewsets.ModelViewSet):
-    """ViewSet for Teacher operations."""
+    """ViewSet untuk operasi guru."""
     
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]

@@ -18,7 +18,7 @@ export const useTenantStore = create(
       fetchTenant: async (subdomain) => {
         set({ isLoading: true })
         try {
-          const response = await api.get(`tenants/${subdomain}/`)
+          const response = await api.get('tenants/current/')
           const tenant = response.data
           
           set({
@@ -54,10 +54,10 @@ export const useTenantStore = create(
         }
       },
       
-      updateTenant: async (subdomain, data) => {
+      updateTenant: async (data) => {
         set({ isLoading: true })
         try {
-          const response = await api.patch(`tenants/${subdomain}/`, data)
+          const response = await api.patch('tenants/current/', data)
           set({ tenant: response.data, isLoading: false })
           return { success: true }
         } catch (error) {

@@ -17,9 +17,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('refresh/', RefreshTokenView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='register'),
-    
-    # User endpoints
-    path('users/list/', UserListView.as_view(), name='user_list'),
+    path('me/', UserViewSet.as_view({'get': 'me'}), name='user_me'),
     
     # Router URLs
     path('', include(router.urls)),

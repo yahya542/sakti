@@ -26,28 +26,28 @@ from .signals import generate_monthly_spp
 @extend_schema_view(
     list=extend_schema(
         tags=['Finance'],
-        summary='List invoices',
-        description='Get a paginated list of all invoices. Filter by status, type, month, or year.'
+        summary='Daftar tagihan',
+        description='Mengambil daftar semua tagihan (dipaginasi). Filter berdasarkan status, tipe, bulan, atau tahun.'
     ),
     create=extend_schema(
         tags=['Finance'],
-        summary='Create invoice',
-        description='Create a new invoice. Requires admin privileges.'
+        summary='Buat tagihan',
+        description='Membuat tagihan baru. Memerlukan hak istimewa admin.'
     ),
     retrieve=extend_schema(
         tags=['Finance'],
-        summary='Get invoice details',
-        description='Get detailed information about a specific invoice.'
+        summary='Detail tagihan',
+        description='Mengambil informasi detail tagihan tertentu.'
     ),
     update=extend_schema(
         tags=['Finance'],
-        summary='Update invoice',
-        description='Update invoice information. Requires admin privileges.'
+        summary='Perbarui tagihan',
+        description='Memperbarui informasi tagihan. Memerlukan hak istimewa admin.'
     ),
     destroy=extend_schema(
         tags=['Finance'],
-        summary='Delete invoice',
-        description='Delete an invoice. Requires admin privileges.'
+        summary='Hapus tagihan',
+        description='Menghapus tagihan. Memerlukan hak istimewa admin.'
     )
 )
 
@@ -97,8 +97,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Finance'],
-        summary='Generate SPP invoices',
-        description='Generate SPP invoices for all students in the current month/year.'
+        summary='Buat tagihan SPP massal',
+        description='Membuat tagihan SPP untuk semua siswa pada bulan/tahun saat ini.'
     )
     @action(detail=False, methods=['post'])
     def generate_spp(self, request):
@@ -139,8 +139,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Finance'],
-        summary='Get invoice payments',
-        description='Get all payments for a specific invoice.'
+        summary='Daftar pembayaran tagihan',
+        description='Mengambil semua pembayaran untuk tagihan tertentu.'
     )
     @action(detail=True, methods=['get'])
     def payments(self, request, pk=None):
@@ -161,28 +161,28 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['Finance'],
-        summary='List payments',
-        description='Get a paginated list of all payments. Filter by status, method, or gateway.'
+        summary='Daftar pembayaran',
+        description='Mengambil daftar semua pembayaran (dipaginasi). Filter berdasarkan status, metode, atau gateway.'
     ),
     create=extend_schema(
         tags=['Finance'],
-        summary='Create payment',
-        description='Record a new payment.'
+        summary='Buat pembayaran',
+        description='Merekam pembayaran baru.'
     ),
     retrieve=extend_schema(
         tags=['Finance'],
-        summary='Get payment details',
-        description='Get detailed information about a specific payment.'
+        summary='Detail pembayaran',
+        description='Mengambil informasi detail pembayaran tertentu.'
     ),
     update=extend_schema(
         tags=['Finance'],
-        summary='Update payment',
-        description='Update payment information.'
+        summary='Perbarui pembayaran',
+        description='Memperbarui informasi pembayaran.'
     ),
     destroy=extend_schema(
         tags=['Finance'],
-        summary='Delete payment',
-        description='Delete a payment record.'
+        summary='Hapus pembayaran',
+        description='Menghapus catatan pembayaran.'
     )
 )
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -225,8 +225,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Finance'],
-        summary='Initialize payment gateway',
-        description='Initialize payment via Midtrans or Xendit gateway.'
+        summary='Inisiasi gateway pembayaran',
+        description='Menginisiasi pembayaran melalui gateway Midtrans atau Xendit.'
     )
     @action(detail=False, methods=['post'])
     def init_gateway(self, request):
@@ -336,28 +336,28 @@ def _initiate_xendit(payment, config):
 @extend_schema_view(
     list=extend_schema(
         tags=['Finance'],
-        summary='List payment gateway configs',
-        description='Get a list of payment gateway configurations.'
+        summary='Daftar konfigurasi gateway',
+        description='Mengambil daftar konfigurasi gateway pembayaran.'
     ),
     create=extend_schema(
         tags=['Finance'],
-        summary='Create payment gateway config',
-        description='Create a new payment gateway configuration.'
+        summary='Buat konfigurasi gateway',
+        description='Membuat konfigurasi gateway pembayaran baru.'
     ),
     retrieve=extend_schema(
         tags=['Finance'],
-        summary='Get payment gateway config',
-        description='Get detailed information about a payment gateway configuration.'
+        summary='Detail konfigurasi gateway',
+        description='Mengambil informasi detail konfigurasi gateway pembayaran.'
     ),
     update=extend_schema(
         tags=['Finance'],
-        summary='Update payment gateway config',
-        description='Update payment gateway configuration.'
+        summary='Perbarui konfigurasi gateway',
+        description='Memperbarui konfigurasi gateway pembayaran.'
     ),
     destroy=extend_schema(
         tags=['Finance'],
-        summary='Delete payment gateway config',
-        description='Delete a payment gateway configuration.'
+        summary='Hapus konfigurasi gateway',
+        description='Menghapus konfigurasi gateway pembayaran.'
     )
 )
 class PaymentGatewayConfigViewSet(viewsets.ModelViewSet):

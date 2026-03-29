@@ -52,7 +52,8 @@ export const useAuthStore = create(
       
       logout: async () => {
         try {
-          await api.post('/api/auth/logout/')
+          // Logout tidak memerlukan endpoint khusus, cukup hapus token dari localStorage
+          // Jika backend mau menyediakan endpoint logout, bisa ditambah di masa depan
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
@@ -74,7 +75,7 @@ export const useAuthStore = create(
         
         set({ isLoading: true })
         try {
-          const response = await api.get('/api/auth/me/')
+          const response = await api.get('/auth/me/')
           set({
             user: response.data,
             isAuthenticated: true,

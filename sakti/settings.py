@@ -211,6 +211,7 @@ CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'apps.accounts.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -301,3 +302,26 @@ REST_FRAMEWORK = {
 # Konfigurasi Masa Berlaku Token (dalam menit)
 JWT_ACCESS_TOKEN_LIFETIME = 60  # Token akses berlaku 1 jam
 JWT_REFRESH_TOKEN_LIFETIME = 1440 # Token refresh berlaku 1 hari (24 jam)
+
+
+# Pastikan 'authorization' ada di sini
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Pastikan class autentikasi sudah terdaftar
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'apps.accounts.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}

@@ -26,28 +26,28 @@ from .serializers import (
 @extend_schema_view(
     list=extend_schema(
         tags=['Activities'],
-        summary='List attendances',
-        description='Get a list of all attendances. Filter by date, status, type, classroom, or subject.'
+        summary='Daftar absensi',
+        description='Mengambil daftar semua absensi. Filter berdasarkan tanggal, status, tipe, classroom, atau mata pelajaran.'
     ),
     create=extend_schema(
         tags=['Activities'],
-        summary='Create attendance',
-        description='Record a new attendance entry.'
+        summary='Buat absensi',
+        description='Merekam entri absensi baru.'
     ),
     retrieve=extend_schema(
         tags=['Activities'],
-        summary='Get attendance details',
-        description='Get detailed information about a specific attendance.'
+        summary='Detail absensi',
+        description='Mengambil informasi detail absensi tertentu.'
     ),
     update=extend_schema(
         tags=['Activities'],
-        summary='Update attendance',
-        description='Update attendance information.'
+        summary='Perbarui absensi',
+        description='Memperbarui informasi absensi.'
     ),
     destroy=extend_schema(
         tags=['Activities'],
-        summary='Delete attendance',
-        description='Delete an attendance record.'
+        summary='Hapus absensi',
+        description='Menghapus catatan absensi.'
     )
 )
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -85,12 +85,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(classroom_id__in=teacher_assignments)
         
         elif user.role == 'parent':
-            # Parents can see their children's attendance
-            from apps.smart_linking.models import ParentStudentLink
-            student_ids = ParentStudentLink.objects.filter(
-                parent=user
-            ).values_list('student_id', flat=True)
-            queryset = queryset.filter(student_id__in=student_ids)
+            # Parents can see their children's attendance via parent_account relationship
+            # Get children (students) linked via parent_account
+            child_ids = user.children.values_list('id', flat=True)
+            queryset = queryset.filter(student_id__in=child_ids)
         
         elif user.role == 'student':
             # Students can only see their own attendance
@@ -108,8 +106,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Activities'],
-        summary='Bulk create attendances',
-        description='Create multiple attendance records at once.'
+        summary='Buat absensi massal',
+        description='Membuat beberapa catatan absensi sekaligus.'
     )
     @action(detail=False, methods=['post'])
     def bulk_create(self, request):
@@ -141,28 +139,28 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['Activities'],
-        summary='List scores',
-        description='Get a list of all scores. Filter by student, subject, classroom, or type.'
+        summary='Daftar nilai',
+        description='Mengambil daftar semua nilai. Filter berdasarkan siswa, mata pelajaran, classroom, atau tipe.'
     ),
     create=extend_schema(
         tags=['Activities'],
-        summary='Create score',
-        description='Record a new score entry.'
+        summary='Buat nilai',
+        description='Merekam entri nilai baru.'
     ),
     retrieve=extend_schema(
         tags=['Activities'],
-        summary='Get score details',
-        description='Get detailed information about a specific score.'
+        summary='Detail nilai',
+        description='Mengambil informasi detail nilai tertentu.'
     ),
     update=extend_schema(
         tags=['Activities'],
-        summary='Update score',
-        description='Update score information.'
+        summary='Perbarui nilai',
+        description='Memperbarui informasi nilai.'
     ),
     destroy=extend_schema(
         tags=['Activities'],
-        summary='Delete score',
-        description='Delete a score record.'
+        summary='Hapus nilai',
+        description='Menghapus catatan nilai.'
     )
 )
 class ScoreViewSet(viewsets.ModelViewSet):
@@ -200,12 +198,10 @@ class ScoreViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(subject_id__in=teacher_assignments)
         
         elif user.role == 'parent':
-            # Parents can see their children's scores
-            from apps.smart_linking.models import ParentStudentLink
-            student_ids = ParentStudentLink.objects.filter(
-                parent=user
-            ).values_list('student_id', flat=True)
-            queryset = queryset.filter(student_id__in=student_ids)
+            # Parents can see their children's scores via parent_account relationship
+            # Get children (students) linked via parent_account
+            child_ids = user.children.values_list('id', flat=True)
+            queryset = queryset.filter(student_id__in=child_ids)
         
         elif user.role == 'student':
             # Students can only see their own scores
@@ -233,8 +229,8 @@ class ScoreViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         tags=['Activities'],
-        summary='Get score audit trail',
-        description='Get audit trail of score changes. Admin only.'
+        summary='Riwayat perubahan nilai',
+        description='Mengambil riwayat perubahan nilai. Hanya untuk admin.'
     )
     @action(detail=False, methods=['get'])
     def audit_trail(self, request):
@@ -258,28 +254,28 @@ class ScoreViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['Activities'],
-        summary='List timeline events',
-        description='Get a list of all timeline events. Filter by type or date.'
+        summary='Daftar acara timeline',
+        description='Mengambil daftar semua acara timeline. Filter berdasarkan tipe atau tanggal.'
     ),
     create=extend_schema(
         tags=['Activities'],
-        summary='Create timeline event',
-        description='Create a new timeline event.'
+        summary='Buat acara timeline',
+        description='Membuat acara timeline baru.'
     ),
     retrieve=extend_schema(
         tags=['Activities'],
-        summary='Get timeline event details',
-        description='Get detailed information about a specific timeline event.'
+        summary='Detail acara timeline',
+        description='Mengambil informasi detail acara timeline tertentu.'
     ),
     update=extend_schema(
         tags=['Activities'],
-        summary='Update timeline event',
-        description='Update timeline event information.'
+        summary='Perbarui acara timeline',
+        description='Memperbarui informasi acara timeline.'
     ),
     destroy=extend_schema(
         tags=['Activities'],
-        summary='Delete timeline event',
-        description='Delete a timeline event.'
+        summary='Hapus acara timeline',
+        description='Menghapus acara timeline.'
     )
 )
 class TimelineEventViewSet(viewsets.ModelViewSet):
@@ -355,13 +351,13 @@ class TimelineEventViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['Activities'],
-        summary='List timeline notifications',
-        description='Get a list of all timeline notifications for the current parent.'
+        summary='Daftar notifikasi timeline',
+        description='Mengambil daftar semua notifikasi timeline untuk orang tua saat ini.'
     ),
     retrieve=extend_schema(
         tags=['Activities'],
-        summary='Get timeline notification details',
-        description='Get detailed information about a specific timeline notification.'
+        summary='Detail notifikasi timeline',
+        description='Mengambil informasi detail notifikasi timeline tertentu.'
     )
 )
 class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -383,8 +379,8 @@ class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
     
     @extend_schema(
         tags=['Activities'],
-        summary='Mark notification as read',
-        description='Mark a specific notification as read.'
+        summary='Tandai notifikasi sudah dibaca',
+        description='Menandai notifikasi tertentu sudah dibaca.'
     )
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
@@ -409,8 +405,8 @@ class TimelineNotificationViewSet(viewsets.ReadOnlyModelViewSet):
     
     @extend_schema(
         tags=['Activities'],
-        summary='Mark all notifications as read',
-        description='Mark all notifications as read for the current parent.'
+        summary='Tandai semua notifikasi sudah dibaca',
+        description='Menandai semua notifikasi sudah dibaca untuk orang tua saat ini.'
     )
     @action(detail=False, methods=['post'])
     def mark_all_read(self, request):

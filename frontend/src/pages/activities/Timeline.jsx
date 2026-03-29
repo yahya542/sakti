@@ -11,7 +11,7 @@ export default function Timeline() {
   // Fetch timeline events
   const { data: timelineData, isLoading } = useQuery({
     queryKey: ['timeline', filters],
-    queryFn: () => api.get('/api/activities/timeline/', { params: filters }),
+    queryFn: () => api.get('/activities/timeline/', { params: filters }),
   })
 
   const formatDate = (dateStr) => {
